@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>জমি পরিমাপ ক্যালকুলেটর | Land Measurement Calculator</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts for Bengali (Hind Siliguri) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e3a8a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: #60a5fa;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+        }
+
+        .glass-input option {
+            background-color: #1e293b;
+            color: white;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-left: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Hide Number Input Arrows */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex items-center justify-center">
+
+    <div class="max-w-4xl w-full mx-auto space-y-8">
+        
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 pb-2">
+                জমি পরিমাপ ক্যালকুলেটর
+            </h1>
+            <p class="text-slate-300 text-sm sm:text-base tracking-wide uppercase font-semibold">
+                Advanced Land Measurement Converter
+            </p>
+        </div>
+
+        <!-- Main Calculator Card -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- Input Section -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div>
+                        <label class="block text-sm text-slate-300 mb-2">মান দিন (Enter Value)</label>
+                        <input type="number" id="inputValue" value="1" placeholder="e.g. 10" 
+                            class="glass-input w-full text-2xl p-4 rounded-xl font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-300 mb-2">কোন একক থেকে? (From Unit)</label>
+                        <select id="fromUnit" class="glass-input w-full p-4 rounded-xl text-lg appearance-none cursor-pointer">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Swap Button -->
+                <div class="lg:col-span-2 flex justify-center py-4 lg:py-0">
+                    <button id="swapBtn" class="group p-4 rounded-full glass-panel hover:bg-white/10 transition-all duration-300 hover:scale-110 focus:outline-none">
+                        <i class="ph ph-arrows-left-right text-3xl text-blue-400 group-hover:text-purple-400 transition-colors lg:block hidden"></i>
+                        <i class="ph ph-arrows-down-up text-3xl text-blue-400 group-hover:text-purple-400 transition-colors lg:hidden block"></i>
+                    </button>
+                </div>
+
+                <!-- Output Section -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div>
+                        <label class="block text-sm text-slate-300 mb-2">কোন এককে? (To Unit)</label>
+                        <select id="toUnit" class="glass-input w-full p-4 rounded-xl text-lg appearance-none cursor-pointer">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-300 mb-2">ফলাফল (Result)</label>
+                        <div class="relative">
+                            <input type="text" id="resultValue" readonly 
+                                class="glass-input w-full text-2xl p-4 rounded-xl font-bold text-green-400 bg-black/30 border-green-500/30">
+                            <button id="copyBtn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-300 hover:text-white" title="Copy Result">
+                                <i class="ph ph-copy text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Comprehensive View Grid -->
+        <div class="glass-panel rounded-3xl p-6 sm:p-8">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
+                <i class="ph ph-grid-four text-blue-400"></i>
+                <span id="overviewTitle">১ বর্গফুট এর সমতুল্য অন্যান্য মান:</span>
+            </h2>
+            
+            <div id="allResultsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Dynamically Populated Cards -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-slate-400 text-sm mt-8">
+            <p>Made with ❤️ for easy land calculation in Bangladesh & India</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Data Structure exactly as provided by user
+        // All factor values are in relation to 1 sq_ft
+        const LAND_UNITS = {
+            sq_ft: { label: 'বর্গফুট (Sq. Feet)', factor: 1, color: 'text-gray-300' },
+            sq_meter: { label: 'বর্গমিটার (Sq. Meter)', factor: 10.76391, color: 'text-blue-300' },
+            dhur: { label: 'ধুর (Dhur)', factor: 36, color: 'text-orange-300' },
+            chhatak: { label: 'ছটাক (Chhatak)', factor: 45, color: 'text-pink-300' },
+            satak_decimal: { label: 'শতাংশ (Decimal)', factor: 435.6, color: 'text-green-300' },
+            katha: { label: 'কাঠা (Katha)', factor: 720, color: 'text-yellow-300' },
+            bigha: { label: 'বিঘা (Bigha)', factor: 14400, color: 'text-purple-300' },
+            acre: { label: 'একর (Acre)', factor: 43560, color: 'text-red-300' }
+        };
+
+        // DOM Elements
+        const fromSelect = document.getElementById('fromUnit');
+        const toSelect = document.getElementById('toUnit');
+        const inputVal = document.getElementById('inputValue');
+        const resultVal = document.getElementById('resultValue');
+        const swapBtn = document.getElementById('swapBtn');
+        const allResultsGrid = document.getElementById('allResultsGrid');
+        const overviewTitle = document.getElementById('overviewTitle');
+        const copyBtn = document.getElementById('copyBtn');
+
+        // Initialize Select Options
+        function initSelects() {
+            const keys = Object.keys(LAND_UNITS);
+            keys.forEach(key => {
+                const opt1 = document.createElement('option');
+                opt1.value = key;
+                opt1.textContent = LAND_UNITS[key].label;
+                fromSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = key;
+                opt2.textContent = LAND_UNITS[key].label;
+                toSelect.appendChild(opt2);
+            });
+
+            // Set Default Selections
+            fromSelect.value = 'satak_decimal';
+            toSelect.value = 'sq_ft';
+        }
+
+        // Main Calculation Logic
+        function calculate() {
+            let val = parseFloat(inputVal.value);
+            if (isNaN(val) || val < 0) {
+                resultVal.value = '0';
+                updateOverview(0, fromSelect.value);
+                return;
+            }
+
+            const fromKey = fromSelect.value;
+            const toKey = toSelect.value;
+
+            // Math: Value * From_Factor = Total Square Feet
+            // Then: Total Square Feet / To_Factor = Result Value
+            const totalSqFt = val * LAND_UNITS[fromKey].factor;
+            let result = totalSqFt / LAND_UNITS[toKey].factor;
+
+            // Format result to remove unnecessary trailing zeroes, up to 5 decimals
+            resultVal.value = parseFloat(result.toFixed(5)).toString();
+
+            // Update the grid view
+            updateOverview(totalSqFt, fromKey, val);
+        }
+
+        // Update All-in-one Grid
+        function updateOverview(baseSqFt, fromKey, originalVal) {
+            allResultsGrid.innerHTML = ''; // Clear existing
+            
+            const fromLabel = LAND_UNITS[fromKey].label.split(' ')[0]; // Get the bengali part
+            const valStr = originalVal ? originalVal : 0;
+            
+            overviewTitle.innerHTML = `<span class="text-blue-400 font-bold">${valStr}</span> ${LAND_UNITS[fromKey].label} এর সমতুল্য অন্যান্য মান:`;
+
+            if(baseSqFt === 0) return;
+
+            Object.keys(LAND_UNITS).forEach(key => {
+                // Don't show the same unit we are converting FROM
+                if(key === fromKey) return;
+
+                let equivalentValue = baseSqFt / LAND_UNITS[key].factor;
+                // Format decimal output
+                let formattedValue = parseFloat(equivalentValue.toFixed(5)).toLocaleString('en-IN', { maximumFractionDigits: 5 });
+
+                const card = document.createElement('div');
+                card.className = 'result-card rounded-2xl p-4 flex flex-col justify-center items-center text-center gap-1 cursor-default';
+                
+                card.innerHTML = `
+                    <span class="text-xs sm:text-sm text-slate-400 font-medium">${LAND_UNITS[key].label}</span>
+                    <span class="text-lg sm:text-xl font-bold ${LAND_UNITS[key].color} tracking-wide">${formattedValue}</span>
+                `;
+                allResultsGrid.appendChild(card);
+            });
+        }
+
+        // Event Listeners
+        inputVal.addEventListener('input', calculate);
+        fromSelect.addEventListener('change', calculate);
+        toSelect.addEventListener('change', calculate);
+
+        swapBtn.addEventListener('click', () => {
+            // Add tiny animation class
+            swapBtn.style.transform = 'rotate(180deg)';
+            setTimeout(() => { swapBtn.style.transform = 'none'; }, 300);
+
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            calculate();
+        });
+
+        // Copy to Clipboard feature
+        copyBtn.addEventListener('click', () => {
+            if(!resultVal.value) return;
+            
+            // Try standard clipboard API first
+            if(navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(resultVal.value);
+            } else {
+                // Fallback for older browsers / embedded iframes
+                resultVal.select();
+                document.execCommand('copy');
+            }
+
+            // Visual feedback
+            const icon = copyBtn.querySelector('i');
+            icon.classList.remove('ph-copy');
+            icon.classList.add('ph-check', 'text-green-400');
+            setTimeout(() => {
+                icon.classList.remove('ph-check', 'text-green-400');
+                icon.classList.add('ph-copy');
+            }, 2000);
+        });
+
+        // Setup on load
+        window.onload = () => {
+            initSelects();
+            calculate();
+        };
+
+    </script>
+</body>
+</html>
